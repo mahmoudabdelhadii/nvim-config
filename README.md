@@ -1,4 +1,4 @@
-# jordan-nvim
+# Mahmoud-nvim
 
 Started off with nvim kickstart (would highly recommend)
 
