@@ -28,7 +28,6 @@ return {
     picker = {
       enabled = true,
       matcher = { ignorecase = true },
-
       layout = { preset = 'telescope' },
       sources = {
         explorer = {
@@ -44,6 +43,15 @@ return {
         input = {
           minimal = true,
         },
+      },
+      -- Enable search history and state preservation
+      history = {
+        enabled = true,
+        max_items = 100,
+      },
+      -- Preserve picker state for resume
+      state = {
+        enabled = true,
       },
     },
     notifier = { enabled = true },
@@ -139,7 +147,7 @@ return {
       desc = 'Registers',
     },
     {
-      '<leader>sb',
+      '<leader>sl',
       function()
         Snacks.picker.lines()
       end,
