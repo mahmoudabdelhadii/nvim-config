@@ -1,5 +1,7 @@
 return {
   'sindrets/diffview.nvim', -- optional - Diff integration
+  dependencies = { 'nvim-tree/nvim-web-devicons' },
+  cmd = { 'DiffviewOpen', 'DiffviewClose', 'DiffviewToggle', 'DiffviewFileHistory' },
   keys = {
 
     {

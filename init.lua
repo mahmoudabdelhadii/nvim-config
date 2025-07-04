@@ -4,6 +4,15 @@ vim.g.maplocalleader = ' '
 -- Set to true if you have a Nerd Font installed and selected in the terminal
 vim.g.have_nerd_font = true
 
+-- Performance optimizations
+vim.loader.enable()
+
+-- Disable unused providers for faster startup
+vim.g.loaded_ruby_provider = 0
+vim.g.loaded_perl_provider = 0
+vim.g.loaded_node_provider = 0
+vim.g.loaded_python3_provider = 0
+
 -- [[ Setting options ]]
 -- Make line numbers off by default, can set on when needed with :set number
 -- Since I use flash by default
@@ -25,6 +34,12 @@ vim.opt.breakindent = true
 
 -- Save undo history
 vim.opt.undofile = true
+vim.opt.undolevels = 10000
+
+-- Better search
+vim.opt.inccommand = 'nosplit'
+vim.opt.grepformat = '%f:%l:%c:%m'
+vim.opt.grepprg = 'rg --vimgrep'
 
 -- Case-insensitive searching UNLESS \C or one or more capital letters in the search term
 vim.opt.ignorecase = true
@@ -33,8 +48,8 @@ vim.opt.smartcase = true
 -- Keep signcolumn on by default
 vim.opt.signcolumn = 'yes'
 
--- Decrease update time
-vim.opt.updatetime = 250
+-- Decrease update time (faster completion)
+vim.opt.updatetime = 200
 
 -- Decrease mapped sequence wait time
 -- Displays which-key popup sooner
@@ -50,8 +65,6 @@ vim.opt.splitbelow = true
 vim.opt.list = true
 vim.opt.listchars = { tab = '» ', trail = ' ', nbsp = '␣' }
 
--- Preview substitutions live, as you type!
-vim.opt.inccommand = 'split'
 
 -- Stop neovim from showing "~" on the start of every row after the last line in the file
 vim.opt.fillchars = { eob = ' ' }
@@ -64,6 +77,25 @@ vim.opt.scrolloff = 10
 
 -- By default it shows you the last command you typed. By having this off lualine sits at the very bottom right
 vim.opt.cmdheight = 0
+
+-- Better completion experience
+vim.opt.completeopt = 'menu,menuone,noselect'
+vim.opt.pumheight = 10
+vim.opt.pumblend = 10
+vim.opt.winblend = 10
+
+-- Better indentation
+vim.opt.expandtab = true
+vim.opt.shiftwidth = 2
+vim.opt.tabstop = 2
+vim.opt.softtabstop = 2
+vim.opt.smartindent = true
+
+-- Better splits
+vim.opt.splitkeep = 'screen'
+
+-- Persistent sessions
+vim.opt.sessionoptions = { 'buffers', 'curdir', 'tabpages', 'winsize', 'help', 'globals', 'skiprtp', 'folds' }
 
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
@@ -225,7 +257,6 @@ vim.keymap.set('n', '<left>', '<cmd>echo "Use h to move!!"<CR>')
 vim.keymap.set('n', '<right>', '<cmd>echo "Use l to move!!"<CR>')
 vim.keymap.set('n', '<up>', '<cmd>echo "Use k to move!!"<CR>')
 vim.keymap.set('n', '<down>', '<cmd>echo "Use j to move!!"<CR>')
-vim.keymap.set('n', '<CR>', '<cmd>echo "Dont use enter in normal mode"<CR>')
 vim.keymap.set('n', 'q', '<cmd>echo "disabled q to stop recording mishaps"<CR>')
 
 -- Convenience
@@ -250,4 +281,3 @@ vim.keymap.set('n', '<leader>it', ':term<CR>:file term<CR>a', { desc = '[I]ntegr
 vim.keymap.set('n', 'cx', 'r') -- keep all changes under c
 vim.keymap.set('c', 'Q', 'q') -- fix typos of Capital Q
 
-vim.keymap.set('n', '<leader>lh', vim.lsp.buf.hover, { desc = '[L]anguage [H]over' })
