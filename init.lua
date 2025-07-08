@@ -185,3 +185,18 @@ vim.keymap.set('n', '<leader>it', ':term<CR>:file term<CR>a', { desc = '[I]ntegr
 vim.keymap.set('n', 'cx', 'r')
 vim.keymap.set('c', 'Q', 'q')
 
+-- Window navigation
+vim.keymap.set('n', '<leader>ww', '<C-w>w', { desc = 'Switch window' })
+vim.keymap.set('n', '<leader>wv', '<C-w>v', { desc = 'Split window vertically' })
+vim.keymap.set('n', '<leader>ws', '<C-w>s', { desc = 'Split window horizontally' })
+vim.keymap.set('n', '<leader>wc', '<C-w>c', { desc = 'Close window' })
+vim.keymap.set('n', '<leader>wo', '<C-w>o', { desc = 'Close other windows' })
+vim.keymap.set('n', '<leader>wh', '<C-w>h', { desc = 'Move to left window' })
+vim.keymap.set('n', '<leader>wj', '<C-w>j', { desc = 'Move to bottom window' })
+vim.keymap.set('n', '<leader>wk', '<C-w>k', { desc = 'Move to top window' })
+vim.keymap.set('n', '<leader>wl', '<C-w>l', { desc = 'Move to right window' })
+
+-- Fix :wa command
+vim.cmd('command! -nargs=0 -bar WA wall')
+vim.cmd('cabbrev wa wall')
+
