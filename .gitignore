@@ -5,3 +5,4 @@ nvim
 backup_init.lua
 
 spell/
+.DS_Store

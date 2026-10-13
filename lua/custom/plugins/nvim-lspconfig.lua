@@ -51,6 +51,35 @@ return {
 
     require('lspconfig').gleam.setup {}
 
+    -- tsgo: native TypeScript LSP (@typescript/native-preview). Not in the
+    -- lspconfig/Mason registry, so register a custom config and set it up directly.
+    local lspconfig_configs = require('lspconfig.configs')
+    if not lspconfig_configs.tsgo then
+      lspconfig_configs.tsgo = {
+        default_config = {
+          cmd = { 'tsgo', '--lsp', '--stdio' },
+          filetypes = {
+            'javascript',
+            'javascriptreact',
+            'javascript.jsx',
+            'typescript',
+            'typescriptreact',
+            'typescript.tsx',
+          },
+          root_dir = require('lspconfig.util').root_pattern(
+            'tsconfig.json',
+            'jsconfig.json',
+            'package.json',
+            '.git'
+          ),
+          single_file_support = true,
+        },
+      }
+    end
+    require('lspconfig').tsgo.setup {
+      capabilities = vim.lsp.protocol.make_client_capabilities(),
+    }
+
     vim.api.nvim_create_autocmd('LspAttach', {
       group = vim.api.nvim_create_augroup('kickstart-lsp-attach', { clear = true }),
       callback = function(event)
@@ -118,33 +147,8 @@ return {
     --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
     local servers = {
       -- Web Development
-      ts_ls = {
-        format = false,
-        settings = {
-          javascript = {
-            inlayHints = {
-              includeInlayEnumMemberValueHints = true,
-              includeInlayFunctionLikeReturnTypeHints = true,
-              includeInlayFunctionParameterTypeHints = true,
-              includeInlayParameterNameHints = 'all',
-              includeInlayParameterNameHintsWhenArgumentMatchesName = true,
-              includeInlayPropertyDeclarationTypeHints = true,
-              includeInlayVariableTypeHints = false,
-            },
-          },
-          typescript = {
-            inlayHints = {
-              includeInlayEnumMemberValueHints = true,
-              includeInlayFunctionLikeReturnTypeHints = true,
-              includeInlayFunctionParameterTypeHints = true,
-              includeInlayParameterNameHints = 'all',
-              includeInlayParameterNameHintsWhenArgumentMatchesName = true,
-              includeInlayPropertyDeclarationTypeHints = true,
-              includeInlayVariableTypeHints = false,
-            },
-          },
-        },
-      },
+      -- NOTE: TypeScript/JavaScript is handled by `tsgo` (@typescript/native-preview),
+      -- set up standalone below the servers table since it is not managed by Mason.
       html = { filetypes = { 'html', 'twig', 'hbs' } },
       cssls = {},
       tailwindcss = {},
@@ -259,7 +263,6 @@ return {
       'prettier',
       'black',
       'isort',
-      'rustfmt',
       'shfmt',
       
       -- Linters

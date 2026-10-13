@@ -56,10 +56,10 @@ return {
     },
     notifier = { enabled = true },
     quickfile = { enabled = false },
-    scope = { enabled = false },
+    scope = { enabled = true },
     scroll = { enabled = false },
-    statuscolumn = { enabled = false },
-    words = { enabled = false },
+    statuscolumn = { enabled = true },
+    words = { enabled = true },
   },
   keys = {
     -- Top Pickers & Explorer

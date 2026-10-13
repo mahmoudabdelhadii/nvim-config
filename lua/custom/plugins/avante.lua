@@ -73,6 +73,15 @@ return {
       'MeanderingProgrammer/render-markdown.nvim',
       opts = {
         file_types = { 'markdown', 'Avante' },
+        -- Add error handling and buffer safety checks
+        debounce = 100,
+        max_file_size = 50.0, -- MB
+        -- Disable anti_conceal to prevent buffer conflicts
+        anti_conceal = {
+          enabled = false,
+        },
+        -- Add buffer validation
+        validate_buffers = true,
       },
       ft = { 'markdown', 'Avante' },
     },
