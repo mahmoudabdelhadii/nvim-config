@@ -1,299 +1,165 @@
+-- Native LSP (vim.lsp.config / vim.lsp.enable). nvim-lspconfig only supplies
+-- the base server configs; mason-lspconfig auto-enables whatever Mason installs.
+local servers = {
+  -- Web
+  html = { filetypes = { 'html', 'twig', 'hbs' } },
+  cssls = {},
+  tailwindcss = {},
+  emmet_ls = { filetypes = { 'html', 'css', 'scss' } },
+
+  -- Backend
+  pyright = {
+    settings = {
+      python = {
+        analysis = {
+          autoSearchPaths = true,
+          useLibraryCodeForTypes = true,
+          diagnosticMode = 'workspace',
+        },
+      },
+    },
+  },
+  rust_analyzer = {
+    settings = {
+      ['rust-analyzer'] = {
+        cargo = { allFeatures = true, loadOutDirsFromCheck = true, runBuildScripts = true },
+        checkOnSave = true,
+        check = { allFeatures = true, command = 'clippy', extraArgs = { '--no-deps' } },
+        procMacro = {
+          enable = true,
+          ignored = {
+            ['async-trait'] = { 'async_trait' },
+            ['napi-derive'] = { 'napi' },
+            ['async-recursion'] = { 'async_recursion' },
+          },
+        },
+      },
+    },
+  },
+  elixirls = {},
+  clangd = {},
+
+  -- DevOps & config
+  terraformls = {},
+  dockerls = {},
+  bashls = {},
+  yamlls = {
+    settings = { yaml = { schemaStore = { enable = false, url = '' } } },
+    before_init = function(_, config)
+      config.settings.yaml.schemas = require('schemastore').yaml.schemas()
+    end,
+  },
+  jsonls = {
+    settings = { json = { validate = { enable = true } } },
+    before_init = function(_, config)
+      config.settings.json.schemas = require('schemastore').json.schemas()
+    end,
+  },
+
+  -- Lua (lazydev.nvim handles the Neovim runtime library)
+  lua_ls = {
+    settings = {
+      Lua = {
+        completion = { callSnippet = 'Replace' },
+        hint = { enable = true, setType = true },
+      },
+    },
+  },
+}
+
+-- Servers not managed by Mason
+local external = {
+  gleam = {},
+  -- tsgo: native TypeScript LSP (@typescript/native-preview), handles TS/JS
+  tsgo = {
+    cmd = { 'tsgo', '--lsp', '--stdio' },
+    filetypes = { 'javascript', 'javascriptreact', 'typescript', 'typescriptreact' },
+    root_markers = { 'tsconfig.json', 'jsconfig.json', 'package.json', '.git' },
+  },
+}
+
+local tools = {
+  -- Formatters
+  'stylua',
+  'prettierd',
+  'ruff',
+  'shfmt',
+  -- Linters
+  'eslint_d',
+  'shellcheck',
+}
+
 return {
   'neovim/nvim-lspconfig',
+  event = { 'BufReadPre', 'BufNewFile' },
   dependencies = {
-    { 'williamboman/mason.nvim', config = true },
-    'williamboman/mason-lspconfig.nvim',
+    { 'mason-org/mason.nvim', opts = {} },
+    'mason-org/mason-lspconfig.nvim',
     'WhoIsSethDaniel/mason-tool-installer.nvim',
     { 'j-hui/fidget.nvim', opts = {} },
-    { 'folke/neodev.nvim', enabled = false },
     'b0o/schemastore.nvim',
+    'saghen/blink.cmp',
   },
   config = function()
-    -- Enhanced diagnostics configuration
-    vim.diagnostic.config({
-      virtual_text = {
-        spacing = 4,
-        source = 'if_many',
-        prefix = '●',
-      },
-      float = {
-        focusable = false,
-        style = 'minimal',
-        border = 'rounded',
-        source = 'always',
-        header = '',
-        prefix = '',
-      },
-      signs = true,
+    vim.diagnostic.config {
+      virtual_text = { spacing = 4, source = 'if_many', prefix = '●' },
+      float = { border = 'rounded', source = true },
       underline = true,
       update_in_insert = false,
       severity_sort = true,
-    })
-
-    -- Enhanced floating window borders
-    local border = {
-      { '╭', 'FloatBorder' },
-      { '─', 'FloatBorder' },
-      { '╮', 'FloatBorder' },
-      { '│', 'FloatBorder' },
-      { '╯', 'FloatBorder' },
-      { '─', 'FloatBorder' },
-      { '╰', 'FloatBorder' },
-      { '│', 'FloatBorder' },
     }
-
-    local orig_util_open_floating_preview = vim.lsp.util.open_floating_preview
-    function vim.lsp.util.open_floating_preview(contents, syntax, opts, ...)
-      opts = opts or {}
-      opts.border = opts.border or border
-      return orig_util_open_floating_preview(contents, syntax, opts, ...)
-    end
-
-    require('lspconfig').gleam.setup {}
-
-    -- tsgo: native TypeScript LSP (@typescript/native-preview). Not in the
-    -- lspconfig/Mason registry, so register a custom config and set it up directly.
-    local lspconfig_configs = require('lspconfig.configs')
-    if not lspconfig_configs.tsgo then
-      lspconfig_configs.tsgo = {
-        default_config = {
-          cmd = { 'tsgo', '--lsp', '--stdio' },
-          filetypes = {
-            'javascript',
-            'javascriptreact',
-            'javascript.jsx',
-            'typescript',
-            'typescriptreact',
-            'typescript.tsx',
-          },
-          root_dir = require('lspconfig.util').root_pattern(
-            'tsconfig.json',
-            'jsconfig.json',
-            'package.json',
-            '.git'
-          ),
-          single_file_support = true,
-        },
-      }
-    end
-    require('lspconfig').tsgo.setup {
-      capabilities = vim.lsp.protocol.make_client_capabilities(),
-    }
+    vim.o.winborder = 'rounded'
 
     vim.api.nvim_create_autocmd('LspAttach', {
-      group = vim.api.nvim_create_augroup('kickstart-lsp-attach', { clear = true }),
+      group = vim.api.nvim_create_augroup('user-lsp-attach', { clear = true }),
       callback = function(event)
-        -- NOTE: Remember that Lua is a real programming language, and as such it is possible
-        -- to define small helper and utility functions so you don't have to repeat yourself.
-        --
-        -- In this case, we create a function that lets us more easily define mappings specific
-        -- for LSP related items. It sets the mode, buffer and description for us each time.
         local map = function(keys, func, desc)
           vim.keymap.set('n', keys, func, { buffer = event.buf, desc = 'LSP: ' .. desc })
         end
 
-        -- Essential LSP navigation
-        map('gd', vim.lsp.buf.definition, '[G]o to [D]efinition')
-        map('gD', vim.lsp.buf.declaration, '[G]o to [D]eclaration')
-        map('gi', vim.lsp.buf.implementation, '[G]o to [I]mplementation')
-        map('gt', vim.lsp.buf.type_definition, '[G]o to [T]ype definition')
-        map('gr', vim.lsp.buf.references, '[G]o to [R]eferences')
-        
-        -- Language features
+        -- gd / gD / gr / gI / gy come from Snacks pickers (snacks.lua); K is native hover
+        map('gi', function() Snacks.picker.lsp_implementations() end, '[G]o to [I]mplementation')
+        map('gt', function() Snacks.picker.lsp_type_definitions() end, '[G]o to [T]ype definition')
+
         map('<leader>le', vim.diagnostic.open_float, '[L]anguage [E]rror')
         map('<leader>rn', vim.lsp.buf.rename, '[R]e[n]ame')
         map('<leader>lh', vim.lsp.buf.hover, '[L]anguage [H]over')
         map('<leader>ls', vim.lsp.buf.signature_help, '[L]anguage [S]ignature')
-        
-        -- Diagnostics navigation
-        map('[d', vim.diagnostic.goto_prev, 'Previous [D]iagnostic')
-        map(']d', vim.diagnostic.goto_next, 'Next [D]iagnostic')
+        map('<leader>la', vim.lsp.buf.code_action, '[L]anguage [A]ction')
         map('<leader>ld', vim.diagnostic.setloclist, '[L]ist [D]iagnostics')
-
+        map('[d', function() vim.diagnostic.jump { count = -1, float = true } end, 'Previous [D]iagnostic')
+        map(']d', function() vim.diagnostic.jump { count = 1, float = true } end, 'Next [D]iagnostic')
 
         local client = vim.lsp.get_client_by_id(event.data.client_id)
-        map('<leader>la', function()
-          vim.lsp.buf.code_action()
-        end, '[L]anguage [A]ction')
-
-        if client then
-          vim.api.nvim_create_user_command('ToggleInlayHints', function()
-            if vim.lsp.inlay_hint then
-              vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
-            else
-              vim.notify 'No inlay hints available'
-            end
-          end, {})
-        end
-        -- The following autocommand is used to enable inlay hints in your
-        -- code, if the language server you are using supports them
-        --
-        -- This may be unwanted, since they displace some of your code
-        if client and client.server_capabilities.inlayHintProvider and vim.lsp.inlay_hint then
+        if client and client:supports_method('textDocument/inlayHint', event.buf) then
           map('<leader>li', function()
-            vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
-          end, '[L]anguage [I]nlay')
+            vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled { bufnr = event.buf }, { bufnr = event.buf })
+          end, '[L]anguage [I]nlay hints')
         end
       end,
     })
 
-    -- Enable the following language servers. They will automatically be installed.
-    --
-    --  Add any additional override configuration in the following tables. Available keys are:
-    --  - cmd (table): Override the default command used to start the server
-    --  - filetypes (table): Override the default list of associated filetypes for the server
-    --  - capabilities (table): Override fields in capabilities. Can be used to disable certain LSP features.
-    --  - settings (table): Override the default settings passed when initializing the server.
-    --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
-    local servers = {
-      -- Web Development
-      -- NOTE: TypeScript/JavaScript is handled by `tsgo` (@typescript/native-preview),
-      -- set up standalone below the servers table since it is not managed by Mason.
-      html = { filetypes = { 'html', 'twig', 'hbs' } },
-      cssls = {},
-      tailwindcss = {},
-      emmet_ls = {
-        filetypes = { 'html', 'css', 'scss' },
-      },
+    -- blink.cmp capabilities for every server
+    vim.lsp.config('*', { capabilities = require('blink.cmp').get_lsp_capabilities() })
 
-      -- Backend Languages
-      pyright = {
-        settings = {
-          python = {
-            analysis = {
-              autoSearchPaths = true,
-              useLibraryCodeForTypes = true,
-              diagnosticMode = 'workspace',
-            },
-          },
-        },
-      },
-      rust_analyzer = {
-        settings = {
-          ['rust-analyzer'] = {
-            cargo = {
-              allFeatures = true,
-              loadOutDirsFromCheck = true,
-              runBuildScripts = true,
-            },
-            checkOnSave = {
-              allFeatures = true,
-              command = 'clippy',
-              extraArgs = { '--no-deps' },
-            },
-            procMacro = {
-              enable = true,
-              ignored = {
-                ['async-trait'] = { 'async_trait' },
-                ['napi-derive'] = { 'napi' },
-                ['async-recursion'] = { 'async_recursion' },
-              },
-            },
-          },
-        },
-      },
+    for name, cfg in pairs(vim.tbl_extend('error', servers, external)) do
+      vim.lsp.config(name, cfg)
+    end
 
-      -- DevOps & Config
-      terraformls = {},
-      dockerls = {},
-      yamlls = {
-        settings = {
-          yaml = {
-            schemas = {
-              ['https://json.schemastore.org/github-workflow.json'] = '/.github/workflows/*',
-              ['https://json.schemastore.org/github-action.json'] = '/action.{yml,yaml}',
-              ['https://json.schemastore.org/docker-compose.json'] = 'docker-compose*.{yml,yaml}',
-              ['https://json.schemastore.org/kustomization.json'] = 'kustomization.{yml,yaml}',
-            },
-          },
-        },
-      },
-      jsonls = {
-        settings = {
-          json = {
-            schemas = require('schemastore').json.schemas(),
-            validate = { enable = true },
-          },
-        },
-      },
-
-      -- Shell & System
-      bashls = {},
-      
-      -- Other Languages
-      elixirls = {},
-      clangd = {},
-      
-      -- Lua (Neovim config)
-      lua_ls = {
-        settings = {
-          Lua = {
-            completion = {
-              callSnippet = 'Replace',
-            },
-            hint = { enable = true, setType = true },
-            diagnostics = {
-              globals = { 'vim' },
-            },
-            workspace = {
-              library = {
-                [vim.fn.expand('$VIMRUNTIME/lua')] = true,
-                [vim.fn.stdpath('config') .. '/lua'] = true,
-              },
-            },
-          },
-        },
-      },
+    require('mason-tool-installer').setup {
+      ensure_installed = vim.list_extend(vim.tbl_keys(servers), tools),
     }
-
-    -- Ensure the servers and tools above are installed
-    --  To check the current status of installed tools and/or manually install
-    --  other tools, you can run
-    --    :Mason
-    --
-    require('mason').setup()
-
-    -- You can add other tools here that you want Mason to install
-    -- for you, so that they are available from within Neovim.
-    local ensure_installed = vim.tbl_keys(servers or {})
-    vim.list_extend(ensure_installed, {
-      -- Formatters
-      'stylua',
-      'prettierd',
-      'prettier',
-      'black',
-      'isort',
-      'shfmt',
-      
-      -- Linters
-      'shellcheck',
-      'eslint_d',
-      'ruff',
-      
-      -- Additional tools
-      'tailwindcss-language-server',
-      'emmet-ls',
-    })
-    require('mason-tool-installer').setup { ensure_installed = ensure_installed }
-
-    local capabilities = vim.tbl_deep_extend(
-      'force',
-      {},
-      vim.lsp.protocol.make_client_capabilities(),
-      vim.lsp.protocol.make_client_capabilities()
-    )
-
+    -- Prefer tsgo when installed (npm i -g @typescript/native-preview), else Mason's ts_ls
+    local has_tsgo = vim.fn.executable 'tsgo' == 1
     require('mason-lspconfig').setup {
-      handlers = {
-        function(server_name)
-          local server = servers[server_name] or {}
-          -- This handles overriding only values explicitly passed
-          -- by the server configuration above. Useful when disabling
-          -- certain features of an LSP (for example, turning off formatting for tsserver)
-          server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
-          require('lspconfig')[server_name].setup(server)
-        end,
-      },
+      -- stylua is a formatter here (conform), not an LSP
+      automatic_enable = { exclude = has_tsgo and { 'ts_ls', 'stylua' } or { 'stylua' } },
     }
+    for name, cfg in pairs(external) do
+      local cmd = cfg.cmd or vim.lsp.config[name].cmd
+      if type(cmd) ~= 'table' or vim.fn.executable(cmd[1]) == 1 then
+        vim.lsp.enable(name)
+      end
+    end
   end,
 }

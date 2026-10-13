@@ -1,9 +1,6 @@
 return {
   'rmagatti/auto-session',
   lazy = false,
-  dependencies = {
-    'nvim-telescope/telescope.nvim',
-  },
   config = function()
     require('auto-session').setup({
       enabled = true,
@@ -28,9 +25,7 @@ return {
       },
       log_level = 'error',
       session_lens = {
-        load_on_setup = true,
-        theme_conf = { border = true },
-        previewer = false,
+        load_on_setup = false,
         mappings = {
           delete_session = { 'i', '<C-D>' },
           alternate_session = { 'i', '<C-S>' },
@@ -40,7 +35,7 @@ return {
     })
 
     -- Session management keymaps (non-conflicting)
-    vim.keymap.set('n', '<leader>Ss', require('auto-session.session-lens').search_session, { desc = 'Session: Search' })
+    vim.keymap.set('n', '<leader>Ss', '<cmd>SessionSearch<cr>', { desc = 'Session: Search' })
     vim.keymap.set('n', '<leader>Sd', '<cmd>SessionDelete<cr>', { desc = 'Session: Delete' })
     vim.keymap.set('n', '<leader>Sp', '<cmd>SessionPurgeOrphaned<cr>', { desc = 'Session: Purge orphaned' })
     vim.keymap.set('n', '<leader>St', '<cmd>SessionToggleAutoSave<cr>', { desc = 'Session: Toggle auto-save' })

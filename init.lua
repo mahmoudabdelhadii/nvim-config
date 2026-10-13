@@ -29,7 +29,7 @@ vim.opt.timeoutlen = 300
 vim.opt.splitright = true
 vim.opt.splitbelow = true
 vim.opt.list = true
-vim.opt.listchars = { tab = '» ', trail = ' ', nbsp = '␣' }
+vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
 vim.opt.fillchars = { eob = ' ' }
 vim.opt.cursorline = true
 vim.opt.scrolloff = 10
@@ -46,13 +46,13 @@ vim.opt.smartindent = true
 vim.opt.splitkeep = 'screen'
 vim.opt.sessionoptions = { 'buffers', 'curdir', 'tabpages', 'winsize', 'help', 'globals', 'skiprtp', 'folds' }
 vim.opt.hlsearch = true
-vim.opt.foldtext = 'v:lua.vim.treesitter.foldtext()'
+vim.opt.foldtext = '' -- native highlighted fold text
 
 vim.api.nvim_create_autocmd('TextYankPost', {
   desc = 'Highlight when yanking (copying) text',
   group = vim.api.nvim_create_augroup('kickstart-highlight-yank', { clear = true }),
   callback = function()
-    vim.highlight.on_yank()
+    vim.hl.on_yank()
   end,
 })
 
@@ -66,7 +66,7 @@ vim.api.nvim_create_autocmd('FileType', {
 
 -- Lazy.nvim setup
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
-if not vim.loop.fs_stat(lazypath) then
+if not vim.uv.fs_stat(lazypath) then
   local lazyrepo = 'https://github.com/folke/lazy.nvim.git'
   vim.fn.system { 'git', 'clone', '--filter=blob:none', '--branch=stable', lazyrepo, lazypath }
 end
@@ -85,6 +85,7 @@ require('lazy').setup({
     },
   },
   change_detection = { enabled = false, notify = true },
+  rocks = { enabled = false },
 })
 
 -- Commands
@@ -95,32 +96,22 @@ vim.api.nvim_create_user_command('CopyRelativePath', function()
 end, {})
 
 vim.api.nvim_create_user_command('Redir', function(ctx)
-  local lines = vim.split(vim.api.nvim_exec(ctx.args, true), '\n', { plain = true })
+  local lines = vim.split(vim.api.nvim_exec2(ctx.args, { output = true }).output, '\n', { plain = true })
   vim.cmd 'enew | setlocal buftype=nofile'
   vim.api.nvim_buf_set_lines(0, 0, -1, false, lines)
   vim.opt_local.modified = false
 end, { nargs = '+', complete = 'command' })
 
 vim.api.nvim_create_user_command('CurLsp', function()
-  vim.cmd 'Redir lua=vim.inspect(vim.lsp.get_active_clients())'
+  vim.cmd 'Redir lua=vim.inspect(vim.lsp.get_clients())'
 end, {})
 
 vim.api.nvim_create_user_command('NewTerminal', function()
   local term_count = 0
-  while true do
-    local term_name = 'Term' .. term_count
-    local repeat_name = false
-    for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-      if vim.api.nvim_buf_get_name(buf) == term_name then
-        repeat_name = true
-        break
-      end
-    end
-    if not repeat_name then
-      vim.cmd(':file ' .. term_name)
-      return
-    end
+  while vim.fn.bufexists('Term' .. term_count) == 1 do
+    term_count = term_count + 1
   end
+  vim.cmd('file Term' .. term_count)
 end, {})
 
 vim.api.nvim_create_user_command('DeleteCurrentFile', function()
@@ -137,8 +128,8 @@ vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
 
 -- Just commands
-local Terminal = require('toggleterm.terminal').Terminal
 function RunJustCommand(recipe)
+  local Terminal = require('toggleterm.terminal').Terminal
   local direction = recipe == 'test' and 'vertical' or 'float'
   local should_conditional_close = recipe == 'lint' or recipe == 'fmt'
   local just_term = Terminal:new {
@@ -163,7 +154,8 @@ vim.keymap.set('n', '<left>', '<cmd>echo "Use h to move!!"<CR>')
 vim.keymap.set('n', '<right>', '<cmd>echo "Use l to move!!"<CR>')
 vim.keymap.set('n', '<up>', '<cmd>echo "Use k to move!!"<CR>')
 vim.keymap.set('n', '<down>', '<cmd>echo "Use j to move!!"<CR>')
-vim.keymap.set('n', 'q', '<cmd>echo "disabled q to stop recording mishaps"<CR>')
+vim.keymap.set('n', 'q', '<cmd>echo "disabled q to stop recording mishaps (use Q)"<CR>')
+vim.keymap.set('n', 'Q', 'q', { desc = 'Record macro' })
 
 -- Enhanced movement
 local function nv_keymap(key, mapping, desc)
@@ -171,19 +163,15 @@ local function nv_keymap(key, mapping, desc)
   vim.keymap.set('v', key, mapping, { desc = desc })
 end
 
-nv_keymap('J', '10j', 'Jump 10 down')
-nv_keymap('K', '10k', 'Jump 10 up')
 nv_keymap('H', '^', 'Jump to start of line')
 nv_keymap('L', '$', 'Jump to end of line')
-nv_keymap('p', 'P', 'Make paste leave clipboard alone')
+vim.keymap.set('x', 'p', 'P', { desc = 'Paste over selection without yanking it' })
 nv_keymap('c', '"ac', 'Make change leave clipboard alone')
 nv_keymap('x', '"_x', 'Make delete 1 character leave clipboard alone')
 
-vim.keymap.set('n', 'z', '<C-o>')
-vim.keymap.set('n', 'Z', '<C-i>')
 vim.keymap.set('n', '<leader>it', ':term<CR>:file term<CR>a', { desc = '[I]ntegrated [T]erminal' })
 vim.keymap.set('n', 'cx', 'r')
-vim.keymap.set('c', 'Q', 'q')
+vim.cmd 'cnoreabbrev Q q'
 
 -- Window navigation
 vim.keymap.set('n', '<leader>ww', '<C-w>w', { desc = 'Switch window' })
@@ -196,7 +184,5 @@ vim.keymap.set('n', '<leader>wj', '<C-w>j', { desc = 'Move to bottom window' })
 vim.keymap.set('n', '<leader>wk', '<C-w>k', { desc = 'Move to top window' })
 vim.keymap.set('n', '<leader>wl', '<C-w>l', { desc = 'Move to right window' })
 
--- Fix :wa command
-vim.cmd('command! -nargs=0 -bar WA wall')
-vim.cmd('cabbrev wa wall')
+vim.cmd 'command! -nargs=0 -bar WA wall'
 

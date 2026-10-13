@@ -414,10 +414,9 @@ return {
       {
         name = 'Git: Switch User Profile',
         execute = function()
-          -- Your 2 GitHub accounts
           local profiles = {
             'Account 1 (mahmoudabdelhadii)',
-            'Account 2 (your-second-account)',
+            'Account 2 (mahmoudnft)',
           }
 
           -- Show current user
@@ -434,10 +433,10 @@ return {
             local username, email
             if choice:match 'Account 1' then
               username = 'mahmoudabdelhadii'
-              email = 'mahmoudashraf960@yahoo.com' -- Update with your actual email
+              email = 'mahmoudashraf960@yahoo.com'
             else
-              username = 'mahmoudnft' -- Update with your second account username
-              email = 'mahmoud@parallelnft.com' -- Update with your actual email
+              username = 'mahmoudnft'
+              email = 'mahmoud@parallelnft.com'
             end
 
             -- Ask for scope

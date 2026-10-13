@@ -45,13 +45,13 @@ return { -- Adds git related signs to the gutter, as well as utilities for manag
       map('v', '<leader>ghs', function() gitsigns.stage_hunk {vim.fn.line('.'), vim.fn.line('v')} end, { desc = '[G]it [H]unk [S]tage' })
       map('v', '<leader>ghr', function() gitsigns.reset_hunk {vim.fn.line('.'), vim.fn.line('v')} end, { desc = '[G]it [H]unk [R]eset' })
       map('n', '<leader>ghS', gitsigns.stage_buffer, { desc = '[G]it [H]unk [S]tage buffer' })
-      map('n', '<leader>ghu', gitsigns.undo_stage_hunk, { desc = '[G]it [H]unk [U]ndo stage' })
+      map('n', '<leader>ghu', gitsigns.stage_hunk, { desc = '[G]it [H]unk toggle stage (undo)' })
       map('n', '<leader>ghR', gitsigns.reset_buffer, { desc = '[G]it [H]unk [R]eset buffer' })
       map('n', '<leader>ghp', gitsigns.preview_hunk, { desc = '[G]it [H]unk [P]review' })
       map('n', '<leader>ghb', function() gitsigns.blame_line{full=true} end, { desc = '[G]it [H]unk [B]lame line' })
       map('n', '<leader>gtb', gitsigns.toggle_current_line_blame, { desc = '[G]it [T]oggle line [B]lame' })
       map('n', '<leader>ghd', gitsigns.diffthis, { desc = '[G]it [H]unk [D]iff' })
-      map('n', '<leader>gtd', gitsigns.toggle_deleted, { desc = '[G]it [T]oggle [D]eleted' })
+      map('n', '<leader>gtd', gitsigns.preview_hunk_inline, { desc = '[G]it [T]oggle [D]eleted (inline preview)' })
 
       -- Text object
       map({'o', 'x'}, 'ih', ':<C-U>Gitsigns select_hunk<CR>', { desc = 'Select git hunk' })

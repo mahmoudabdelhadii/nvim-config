@@ -22,18 +22,13 @@ return {
         { section = 'terminal', cmd = 'fortune -s | cowsay -r', padding = 1, indent = 8, ttl = 0, height = 20 },
       },
     },
-    explorer = { enabled = true },
+    lazygit = { enabled = true },
     indent = { enabled = true },
     input = { enabled = true },
     picker = {
       enabled = true,
       matcher = { ignorecase = true },
       layout = { preset = 'telescope' },
-      sources = {
-        explorer = {
-          auto_close = true,
-        },
-      },
       win = {
         preview = {
           wo = {
@@ -203,11 +198,26 @@ return {
       desc = 'Quickfix List',
     },
     {
-      '<leader>sx',
+      '<leader>gg',
       function()
-        Snacks.picker.explorer()
+        Snacks.lazygit()
       end,
-      desc = 'Explorer',
+      desc = 'LazyGit',
+    },
+    {
+      '<leader>gl',
+      function()
+        Snacks.lazygit.log_file()
+      end,
+      desc = 'LazyGit current file log',
+    },
+    {
+      '<leader>go',
+      function()
+        Snacks.gitbrowse()
+      end,
+      mode = { 'n', 'x' },
+      desc = 'Open in GitHub',
     },
 
     {
