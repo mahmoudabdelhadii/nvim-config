@@ -9,9 +9,7 @@ return { -- Collection of various small independent plugins/modules
     --  - ci'  - [C]hange [I]nside [']quote
     require('mini.ai').setup { n_lines = 500 }
 
-    require('mini.statusline').setup()
     require('mini.sessions').setup {}
-    require('mini.snippets').setup {}
 
     -- Add/delete/replace surroundings (brackets, quotes, etc.)
     --
