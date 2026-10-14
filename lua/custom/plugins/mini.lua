@@ -17,7 +17,7 @@ return { -- Collection of various small independent plugins/modules
     -- - saiw) - [S]urround [A]dd [I]nner [W]ord [)]Paren
     -- - sd'   - [S]urround [D]elete [']quotes
     -- - sr)'  - [S]urround [R]eplace [)] [']
-    require('mini.surround').setup { autoread = true }
+    require('mini.surround').setup {}
 
     -- require('mini.starter').setup()
     require('mini.files').setup {
@@ -70,6 +70,27 @@ return { -- Collection of various small independent plugins/modules
         width_preview = 100,
       },
     }
+
+    -- LSP-aware renames/moves (updates imports)
+    vim.api.nvim_create_autocmd('User', {
+      pattern = { 'MiniFilesActionRename', 'MiniFilesActionMove' },
+      callback = function(event)
+        Snacks.rename.on_rename_file(event.data.from, event.data.to)
+      end,
+    })
+
+    -- `ga` in the explorer: hand the file/dir under the cursor to the active agent
+    vim.api.nvim_create_autocmd('User', {
+      pattern = 'MiniFilesBufferCreate',
+      callback = function(args)
+        vim.keymap.set('n', 'ga', function()
+          local entry = MiniFiles.get_fs_entry()
+          if entry then
+            require('sidekick.cli').send { msg = '@' .. vim.fn.fnamemodify(entry.path, ':.') .. ' ' }
+          end
+        end, { buffer = args.data.buf_id, desc = 'Send to agent' })
+      end,
+    })
 
     vim.keymap.set('n', '<leader>if', function()
       local function file_exists(file)

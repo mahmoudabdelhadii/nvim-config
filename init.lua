@@ -48,6 +48,27 @@ vim.opt.sessionoptions = { 'buffers', 'curdir', 'tabpages', 'winsize', 'help', '
 vim.opt.hlsearch = true
 vim.opt.foldtext = '' -- native highlighted fold text
 
+vim.opt.autoread = true
+vim.api.nvim_create_autocmd({ 'FocusGained', 'BufEnter', 'CursorHold', 'TermLeave' }, {
+  desc = 'Reload files changed outside Neovim (agents, git)',
+  group = vim.api.nvim_create_augroup('user-checktime', { clear = true }),
+  callback = function()
+    if vim.fn.getcmdwintype() == '' then
+      vim.cmd 'checktime'
+    end
+  end,
+})
+
+-- Commit messages from the default agent (<leader>a. to change)
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = 'gitcommit',
+  callback = function(args)
+    vim.keymap.set('n', '<leader>aC', function()
+      require('custom.agents').commit_message()
+    end, { buffer = args.buf, desc = 'Agent: write commit message' })
+  end,
+})
+
 vim.api.nvim_create_autocmd('TextYankPost', {
   desc = 'Highlight when yanking (copying) text',
   group = vim.api.nvim_create_augroup('kickstart-highlight-yank', { clear = true }),

@@ -25,7 +25,20 @@ return {
         lualine_a = {},
         lualine_b = {},
         lualine_c = {},
-        lualine_x = {},
+        lualine_x = {
+          {
+            function()
+              return require('custom.agents').status()
+            end,
+          },
+          -- show macro recording (cmdheight=0 hides it)
+          {
+            function()
+              local reg = vim.fn.reg_recording()
+              return reg ~= '' and ('recording @' .. reg) or ''
+            end,
+          },
+        },
         lualine_y = {
           -- 'branch',
           {

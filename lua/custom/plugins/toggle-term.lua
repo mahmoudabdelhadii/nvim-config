@@ -3,7 +3,6 @@ return {
   version = '*',
   keys = {
     { [[<c-\>]], desc = 'Toggle terminal' },
-    { '<leader>ag', desc = 'AI: Gemini Terminal' },
   },
   cmd = { 'ToggleTerm', 'TermExec' },
   config = function()
@@ -19,20 +18,6 @@ return {
         winblend = 0,
       },
     }
-
-    -- Claude Code lives in coder/claudecode.nvim (ai.lua)
-    local gemini_terminal = require('toggleterm.terminal').Terminal:new {
-      cmd = 'gemini',
-      dir = 'git_dir',
-      direction = 'vertical',
-      close_on_exit = false,
-      hidden = true,
-      count = 98,
-      display_name = 'Gemini',
-    }
-    vim.keymap.set('n', '<leader>ag', function()
-      gemini_terminal:toggle()
-    end, { desc = 'AI: Gemini Terminal' })
 
     -- Terminal navigation, only in toggleterm windows (Esc must reach TUIs like Claude Code)
     vim.api.nvim_create_autocmd('FileType', {
