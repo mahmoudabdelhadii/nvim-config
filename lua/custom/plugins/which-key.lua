@@ -11,7 +11,6 @@ return {
       { '<leader>gt', group = '[G]it [T]oggle' },
       { '<leader>h', group = '[H]arpoon' },
       { '<leader>i', group = '[I]ntegrated tools' },
-      { '<leader>j', group = '[J]ust' },
       { '<leader>l', group = '[L]SP' },
       { '<leader>s', group = '[S]earch' },
       { '<leader>S', group = '[S]ession' },

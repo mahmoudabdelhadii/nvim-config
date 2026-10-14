@@ -132,13 +132,3 @@ map('n', 'cx', 'r', { desc = 'Replace char' })
 map({ 'n', 't' }, [[<C-\>]], function()
   Snacks.terminal.toggle()
 end, { desc = 'Toggle terminal' })
-
--- just recipes
-for key, recipe in pairs { t = 'test', b = 'build', l = 'lint', f = 'fmt' } do
-  map('n', '<leader>j' .. key, function()
-    Snacks.terminal('just ' .. recipe, {
-      auto_close = false,
-      win = { position = recipe == 'test' and 'right' or 'float' },
-    })
-  end, { desc = 'just ' .. recipe })
-end
