@@ -25,7 +25,18 @@ return {
       },
       sections = {
         { section = 'header' },
-        { section = 'terminal', cmd = 'fortune -s | cowsay -r', padding = 1, indent = 8, ttl = 0, height = 20 },
+        -- Plain text instead of a terminal section, so there's no "[Process exited 0]"
+        function()
+          if vim.fn.executable 'fortune' == 0 or vim.fn.executable 'cowsay' == 0 then
+            return {}
+          end
+          local cow = vim.trim(vim.fn.system 'fortune -s | cowsay -r')
+          local width = 0
+          for _, line in ipairs(vim.split(cow, '\n')) do
+            width = math.max(width, vim.api.nvim_strwidth(line))
+          end
+          return { text = { cow, hl = 'SnacksDashboardDesc', align = 'left', width = width }, padding = 1 }
+        end,
       },
     },
     indent = { enabled = true },
