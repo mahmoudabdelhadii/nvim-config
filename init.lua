@@ -1,57 +1,63 @@
--- Leader keys
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 vim.g.have_nerd_font = true
 
--- Performance optimizations
 vim.loader.enable()
 vim.g.loaded_ruby_provider = 0
 vim.g.loaded_perl_provider = 0
 vim.g.loaded_node_provider = 0
 vim.g.loaded_python3_provider = 0
 
--- Options
-vim.opt.number = false
-vim.opt.showmode = false
-vim.opt.wrap = false
-vim.opt.clipboard = 'unnamedplus'
-vim.opt.breakindent = true
-vim.opt.undofile = true
-vim.opt.undolevels = 10000
-vim.opt.inccommand = 'nosplit'
-vim.opt.grepformat = '%f:%l:%c:%m'
-vim.opt.grepprg = 'rg --vimgrep'
-vim.opt.ignorecase = true
-vim.opt.smartcase = true
-vim.opt.signcolumn = 'yes'
-vim.opt.updatetime = 200
-vim.opt.timeoutlen = 300
-vim.opt.splitright = true
-vim.opt.splitbelow = true
-vim.opt.list = true
-vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
-vim.opt.fillchars = { eob = ' ' }
-vim.opt.cursorline = true
-vim.opt.scrolloff = 10
-vim.opt.cmdheight = 0
-vim.opt.completeopt = 'menu,menuone,noselect'
-vim.opt.pumheight = 10
-vim.opt.pumblend = 10
-vim.opt.winblend = 10
-vim.opt.expandtab = true
-vim.opt.shiftwidth = 2
-vim.opt.tabstop = 2
-vim.opt.softtabstop = 2
-vim.opt.smartindent = true
-vim.opt.splitkeep = 'screen'
-vim.opt.sessionoptions = { 'buffers', 'curdir', 'tabpages', 'winsize', 'help', 'globals', 'skiprtp', 'folds', 'localoptions' }
-vim.opt.hlsearch = true
-vim.opt.foldtext = '' -- native highlighted fold text
+-- AI agents run on subscription logins; shell API keys would take precedence
+for _, var in ipairs { 'ANTHROPIC_API_KEY', 'OPENAI_API_KEY', 'GEMINI_API_KEY', 'GOOGLE_API_KEY' } do
+  vim.env[var] = nil
+end
 
-vim.opt.autoread = true
+-- Options
+local o = vim.opt
+o.number = false
+o.showmode = false
+o.wrap = false
+o.clipboard = 'unnamedplus'
+o.breakindent = true
+o.undofile = true
+o.undolevels = 10000
+o.inccommand = 'nosplit'
+o.grepformat = '%f:%l:%c:%m'
+o.grepprg = 'rg --vimgrep'
+o.ignorecase = true
+o.smartcase = true
+o.signcolumn = 'yes'
+o.updatetime = 200
+o.timeoutlen = 300
+o.splitright = true
+o.splitbelow = true
+o.splitkeep = 'screen'
+o.list = true
+o.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
+o.fillchars = { eob = ' ' }
+o.cursorline = true
+o.scrolloff = 10
+o.cmdheight = 0
+o.completeopt = 'menu,menuone,noselect'
+o.pumheight = 10
+o.pumblend = 10
+o.winblend = 10
+o.expandtab = true
+o.shiftwidth = 2
+o.tabstop = 2
+o.softtabstop = 2
+o.smartindent = true
+o.sessionoptions = { 'buffers', 'curdir', 'tabpages', 'winsize', 'help', 'globals', 'skiprtp', 'folds', 'localoptions' }
+o.foldtext = '' -- native highlighted fold text
+o.autoread = true
+
+-- Autocommands
+local group = vim.api.nvim_create_augroup('user', { clear = true })
+
 vim.api.nvim_create_autocmd({ 'FocusGained', 'BufEnter', 'CursorHold', 'TermLeave' }, {
   desc = 'Reload files changed outside Neovim (agents, git)',
-  group = vim.api.nvim_create_augroup('user-checktime', { clear = true }),
+  group = group,
   callback = function()
     if vim.fn.getcmdwintype() == '' then
       vim.cmd 'checktime'
@@ -59,53 +65,26 @@ vim.api.nvim_create_autocmd({ 'FocusGained', 'BufEnter', 'CursorHold', 'TermLeav
   end,
 })
 
--- Commit messages from the default agent (<leader>a. to change)
-vim.api.nvim_create_autocmd('FileType', {
-  pattern = 'gitcommit',
-  callback = function(args)
-    vim.keymap.set('n', '<leader>aC', function()
-      require('custom.agents').commit_message()
-    end, { buffer = args.buf, desc = 'Agent: write commit message' })
-  end,
-})
-
 vim.api.nvim_create_autocmd('TextYankPost', {
-  desc = 'Highlight when yanking (copying) text',
-  group = vim.api.nvim_create_augroup('kickstart-highlight-yank', { clear = true }),
+  desc = 'Highlight yanked text',
+  group = group,
   callback = function()
     vim.hl.on_yank()
   end,
 })
 
-vim.api.nvim_create_autocmd('FileType', {
-  pattern = 'csv',
-  desc = 'Enable CSV View on .csv files',
-  callback = function()
-    require('csvview').enable()
-  end,
-})
-
--- Lazy.nvim setup
+-- Plugins
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
 if not vim.uv.fs_stat(lazypath) then
-  local lazyrepo = 'https://github.com/folke/lazy.nvim.git'
-  vim.fn.system { 'git', 'clone', '--filter=blob:none', '--branch=stable', lazyrepo, lazypath }
+  vim.fn.system { 'git', 'clone', '--filter=blob:none', '--branch=stable', 'https://github.com/folke/lazy.nvim.git', lazypath }
 end
 vim.opt.rtp:prepend(lazypath)
 
 require('lazy').setup({
   'tpope/vim-sleuth',
-  'tweekmonster/django-plus.vim',
   { import = 'custom.plugins' },
 }, {
-  ui = {
-    icons = vim.g.have_nerd_font and {} or {
-      cmd = '⌘', config = '🛠', event = '📅', ft = '📂', init = '⚙', keys = '🗝',
-      plugin = '🔌', runtime = '💻', require = '🌙', source = '📄', start = '🚀',
-      task = '📌', lazy = '💤 ',
-    },
-  },
-  change_detection = { enabled = false, notify = true },
+  change_detection = { enabled = false },
   rocks = { enabled = false },
 })
 
@@ -113,97 +92,53 @@ require('lazy').setup({
 vim.api.nvim_create_user_command('CopyRelativePath', function()
   local path = vim.fn.expand '%'
   vim.fn.setreg('+', path)
-  vim.notify('Copied "' .. path .. '" to the clipboard!')
-end, {})
-
-vim.api.nvim_create_user_command('Redir', function(ctx)
-  local lines = vim.split(vim.api.nvim_exec2(ctx.args, { output = true }).output, '\n', { plain = true })
-  vim.cmd 'enew | setlocal buftype=nofile'
-  vim.api.nvim_buf_set_lines(0, 0, -1, false, lines)
-  vim.opt_local.modified = false
-end, { nargs = '+', complete = 'command' })
-
-vim.api.nvim_create_user_command('CurLsp', function()
-  vim.cmd 'Redir lua=vim.inspect(vim.lsp.get_clients())'
-end, {})
-
-vim.api.nvim_create_user_command('NewTerminal', function()
-  local term_count = 0
-  while vim.fn.bufexists('Term' .. term_count) == 1 do
-    term_count = term_count + 1
-  end
-  vim.cmd('file Term' .. term_count)
+  vim.notify('Copied "' .. path .. '"')
 end, {})
 
 vim.api.nvim_create_user_command('DeleteCurrentFile', function()
-  vim.cmd('!rm ' .. vim.fn.shellescape(vim.fn.expand '%'))
-end, { nargs = 0 })
-
-vim.api.nvim_create_user_command('DeleteAndCloseCurrentFile', function()
-  vim.cmd('!rm ' .. vim.fn.shellescape(vim.fn.expand '%'))
-  vim.cmd 'bdelete!'
-end, { nargs = 0 })
-
--- Keymaps
-vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
-vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
-
--- Just commands
-function RunJustCommand(recipe)
-  local Terminal = require('toggleterm.terminal').Terminal
-  local direction = recipe == 'test' and 'vertical' or 'float'
-  local should_conditional_close = recipe == 'lint' or recipe == 'fmt'
-  local just_term = Terminal:new {
-    cmd = 'just ' .. recipe,
-    direction = direction,
-    close_on_exit = false,
-    hidden = true,
-    on_exit = should_conditional_close and vim.schedule_wrap(function(term, exit_code, _)
-      if exit_code == 0 then term:close() end
-    end) or nil,
-  }
-  just_term:toggle()
-end
-
-vim.keymap.set('n', '<leader>jt', function() RunJustCommand 'test' end, { desc = 'Just: Test' })
-vim.keymap.set('n', '<leader>jb', function() RunJustCommand 'build' end, { desc = 'Just: Build' })
-vim.keymap.set('n', '<leader>jl', function() RunJustCommand 'lint' end, { desc = 'Just: Lint' })
-vim.keymap.set('n', '<leader>jf', function() RunJustCommand 'fmt' end, { desc = 'Just: Format' })
-
--- Disabled keys
-vim.keymap.set('n', '<left>', '<cmd>echo "Use h to move!!"<CR>')
-vim.keymap.set('n', '<right>', '<cmd>echo "Use l to move!!"<CR>')
-vim.keymap.set('n', '<up>', '<cmd>echo "Use k to move!!"<CR>')
-vim.keymap.set('n', '<down>', '<cmd>echo "Use j to move!!"<CR>')
-vim.keymap.set('n', 'q', '<cmd>echo "disabled q to stop recording mishaps (use Q)"<CR>')
-vim.keymap.set('n', 'Q', 'q', { desc = 'Record macro' })
-
--- Enhanced movement
-local function nv_keymap(key, mapping, desc)
-  vim.keymap.set('n', key, mapping, { desc = desc })
-  vim.keymap.set('v', key, mapping, { desc = desc })
-end
-
-nv_keymap('H', '^', 'Jump to start of line')
-nv_keymap('L', '$', 'Jump to end of line')
-vim.keymap.set('x', 'p', 'P', { desc = 'Paste over selection without yanking it' })
-nv_keymap('c', '"ac', 'Make change leave clipboard alone')
-nv_keymap('x', '"_x', 'Make delete 1 character leave clipboard alone')
-
-vim.keymap.set('n', '<leader>it', ':term<CR>:file term<CR>a', { desc = '[I]ntegrated [T]erminal' })
-vim.keymap.set('n', 'cx', 'r')
-vim.cmd 'cnoreabbrev Q q'
-
--- Window navigation
-vim.keymap.set('n', '<leader>ww', '<C-w>w', { desc = 'Switch window' })
-vim.keymap.set('n', '<leader>wv', '<C-w>v', { desc = 'Split window vertically' })
-vim.keymap.set('n', '<leader>ws', '<C-w>s', { desc = 'Split window horizontally' })
-vim.keymap.set('n', '<leader>wc', '<C-w>c', { desc = 'Close window' })
-vim.keymap.set('n', '<leader>wo', '<C-w>o', { desc = 'Close other windows' })
-vim.keymap.set('n', '<leader>wh', '<C-w>h', { desc = 'Move to left window' })
-vim.keymap.set('n', '<leader>wj', '<C-w>j', { desc = 'Move to bottom window' })
-vim.keymap.set('n', '<leader>wk', '<C-w>k', { desc = 'Move to top window' })
-vim.keymap.set('n', '<leader>wl', '<C-w>l', { desc = 'Move to right window' })
+  local file = vim.fn.expand '%:p'
+  if vim.fn.confirm('Delete ' .. vim.fn.expand '%:.' .. '?', '&Yes\n&No', 2) == 1 then
+    Snacks.bufdelete { force = true }
+    vim.fs.rm(file)
+  end
+end, {})
 
 vim.cmd 'command! -nargs=0 -bar WA wall'
+vim.cmd 'cnoreabbrev Q q'
 
+-- Keymaps
+local map = vim.keymap.set
+
+map('n', '<Esc>', '<cmd>nohlsearch<CR>')
+map('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
+
+-- Macros on Q so a stray q never starts recording
+map('n', 'q', '<Nop>')
+map('n', 'Q', 'q', { desc = 'Record macro' })
+
+-- hjkl only
+for _, key in ipairs { '<Left>', '<Right>', '<Up>', '<Down>' } do
+  map('n', key, '<Nop>')
+end
+
+map({ 'n', 'x' }, 'H', '^', { desc = 'Start of line' })
+map({ 'n', 'x' }, 'L', '$', { desc = 'End of line' })
+map('x', 'p', 'P', { desc = 'Paste without yanking selection' })
+map({ 'n', 'x' }, 'c', '"ac', { desc = 'Change without touching clipboard' })
+map({ 'n', 'x' }, 'x', '"_x', { desc = 'Delete char without touching clipboard' })
+map('n', 'cx', 'r', { desc = 'Replace char' })
+
+-- Terminals (Snacks)
+map({ 'n', 't' }, [[<C-\>]], function()
+  Snacks.terminal.toggle()
+end, { desc = 'Toggle terminal' })
+
+-- just recipes
+for key, recipe in pairs { t = 'test', b = 'build', l = 'lint', f = 'fmt' } do
+  map('n', '<leader>j' .. key, function()
+    Snacks.terminal('just ' .. recipe, {
+      auto_close = false,
+      win = { position = recipe == 'test' and 'right' or 'float' },
+    })
+  end, { desc = 'just ' .. recipe })
+end

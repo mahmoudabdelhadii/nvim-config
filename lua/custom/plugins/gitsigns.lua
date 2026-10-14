@@ -1,11 +1,6 @@
 return { -- Adds git related signs to the gutter, as well as utilities for managing changes
   'lewis6991/gitsigns.nvim',
   opts = {
-    _on_attach_pre = function(_, callback)
-      if vim.api.nvim_buf_is_valid(vim.api.nvim_get_current_buf()) then
-        callback()
-      end
-    end,
     signs = {
       add = { text = '+' },
       change = { text = '~' },
@@ -40,12 +35,11 @@ return { -- Adds git related signs to the gutter, as well as utilities for manag
       end, { desc = 'Previous git [C]hange' })
 
       -- Actions
-      map('n', '<leader>ghs', gitsigns.stage_hunk, { desc = '[G]it [H]unk [S]tage' })
+      map('n', '<leader>ghs', gitsigns.stage_hunk, { desc = '[G]it [H]unk [S]tage (toggle)' })
       map('n', '<leader>ghr', gitsigns.reset_hunk, { desc = '[G]it [H]unk [R]eset' })
       map('v', '<leader>ghs', function() gitsigns.stage_hunk {vim.fn.line('.'), vim.fn.line('v')} end, { desc = '[G]it [H]unk [S]tage' })
       map('v', '<leader>ghr', function() gitsigns.reset_hunk {vim.fn.line('.'), vim.fn.line('v')} end, { desc = '[G]it [H]unk [R]eset' })
       map('n', '<leader>ghS', gitsigns.stage_buffer, { desc = '[G]it [H]unk [S]tage buffer' })
-      map('n', '<leader>ghu', gitsigns.stage_hunk, { desc = '[G]it [H]unk toggle stage (undo)' })
       map('n', '<leader>ghR', gitsigns.reset_buffer, { desc = '[G]it [H]unk [R]eset buffer' })
       map('n', '<leader>ghp', gitsigns.preview_hunk, { desc = '[G]it [H]unk [P]review' })
       map('n', '<leader>ghb', function() gitsigns.blame_line{full=true} end, { desc = '[G]it [H]unk [B]lame line' })

@@ -1,3 +1,9 @@
+local function pick(source, opts)
+  return function()
+    Snacks.picker[source](opts)
+  end
+end
+
 return {
   'folke/snacks.nvim',
   priority = 1000,
@@ -5,270 +11,53 @@ return {
   ---@type snacks.Config
   opts = {
     bigfile = { enabled = true },
-    dashboard = {
-      enabled = true,
-      preset = {
-        keys = {},
-        header = [[
-███╗   ██╗███████╗ ██████╗ ██╗   ██╗██╗███╗   ███╗
-████╗  ██║██╔════╝██╔═══██╗██║   ██║██║████╗ ████║
-██╔██╗ ██║█████╗  ██║   ██║██║   ██║██║██╔████╔██║
-██║╚██╗██║██╔══╝  ██║   ██║╚██╗ ██╔╝██║██║╚██╔╝██║
-██║ ╚████║███████╗╚██████╔╝ ╚████╔╝ ██║██║ ╚═╝ ██║
-╚═╝  ╚═══╝╚══════╝ ╚═════╝   ╚═══╝  ╚═╝╚═╝     ╚═╝]],
-      },
-      sections = {
-        { section = 'header' },
-        { section = 'terminal', cmd = 'fortune -s | cowsay -r', padding = 1, indent = 8, ttl = 0, height = 20 },
-      },
-    },
-    lazygit = { enabled = true },
     indent = { enabled = true },
     input = { enabled = true },
+    lazygit = { enabled = true },
+    notifier = { enabled = true },
+    scope = { enabled = true },
+    statuscolumn = { enabled = true },
+    terminal = { enabled = true },
+    words = { enabled = true },
     picker = {
       enabled = true,
       matcher = { ignorecase = true },
       layout = { preset = 'telescope' },
       win = {
-        preview = {
-          wo = {
-            number = false,
-          },
-        },
-        input = {
-          minimal = true,
-        },
-      },
-      -- Enable search history and state preservation
-      history = {
-        enabled = true,
-        max_items = 100,
-      },
-      -- Preserve picker state for resume
-      state = {
-        enabled = true,
+        preview = { wo = { number = false } },
+        input = { minimal = true },
       },
     },
-    notifier = { enabled = true },
-    quickfile = { enabled = false },
-    scope = { enabled = true },
-    scroll = { enabled = false },
-    statuscolumn = { enabled = true },
-    words = { enabled = true },
   },
   keys = {
-    -- Top Pickers & Explorer
-    {
-      '<leader><leader>',
-      function()
-        Snacks.picker.smart()
-      end,
-      desc = 'Smart Find Files',
-    },
-    {
-      '<leader>so',
-      function()
-        Snacks.picker.buffers()
-      end,
-      desc = 'Buffers',
-    },
-    {
-      '<leader>sp',
-      function()
-        Snacks.picker.grep()
-      end,
-      desc = 'Grep',
-    },
-
-    {
-      '<leader>sf',
-      function()
-        Snacks.picker.files()
-      end,
-      desc = '[S]earch [F]iles',
-    },
-    {
-      '<leader>se',
-      function()
-        Snacks.picker.files {
-          hidden = true,
-          ignored = true,
-          title = 'Everything',
-        }
-      end,
-      desc = 'Everything',
-    },
-    {
-      '<leader>sgs',
-      function()
-        Snacks.picker.git_status()
-      end,
-      desc = '[G]it [S]tatus',
-    },
-    {
-      '<leader>sgt',
-      function()
-        Snacks.picker.git_stash()
-      end,
-      desc = '[G]it s[T]ash',
-    },
-    {
-      '<leader>sb',
-      function()
-        Snacks.picker.lines()
-      end,
-      desc = 'Buffer Lines',
-    },
-    {
-      '<leader>sB',
-      function()
-        Snacks.picker.grep_buffers()
-      end,
-      desc = 'Grep Open Buffers',
-    },
-    {
-      '<leader>sw',
-      function()
-        Snacks.picker.grep_word()
-      end,
-      desc = 'Visual selection or word',
-      mode = { 'n', 'x' },
-    },
-    {
-      '<leader>s"',
-      function()
-        Snacks.picker.registers()
-      end,
-      desc = 'Registers',
-    },
-    {
-      '<leader>sl',
-      function()
-        Snacks.picker.lines()
-      end,
-      desc = 'Buffer Lines',
-    },
-    {
-      '<leader>sc',
-      function()
-        Snacks.picker.commands()
-      end,
-      desc = 'Commands',
-    },
-    {
-      '<leader>sd',
-      function()
-        Snacks.picker.diagnostics()
-      end,
-      desc = 'Diagnostics',
-    },
-    {
-      '<leader>sD',
-      function()
-        Snacks.picker.diagnostics_buffer()
-      end,
-      desc = 'Buffer Diagnostics',
-    },
-    {
-      '<leader>sh',
-      function()
-        Snacks.picker.help()
-      end,
-      desc = 'Help Pages',
-    },
-    {
-      '<leader>sH',
-      function()
-        Snacks.picker.highlights()
-      end,
-      desc = 'Highlights',
-    },
-    {
-      '<leader>sk',
-      function()
-        Snacks.picker.keymaps()
-      end,
-      desc = 'Keymaps',
-    },
-    {
-      '<leader>sq',
-      function()
-        Snacks.picker.qflist()
-      end,
-      desc = 'Quickfix List',
-    },
-    {
-      '<leader>gg',
-      function()
-        Snacks.lazygit()
-      end,
-      desc = 'LazyGit',
-    },
-    {
-      '<leader>gl',
-      function()
-        Snacks.lazygit.log_file()
-      end,
-      desc = 'LazyGit current file log',
-    },
-    {
-      '<leader>go',
-      function()
-        Snacks.gitbrowse()
-      end,
-      mode = { 'n', 'x' },
-      desc = 'Open in GitHub',
-    },
-
-    {
-      '<leader>sr',
-      function()
-        Snacks.picker.resume()
-      end,
-      desc = 'Resume',
-    },
-    {
-      'gd',
-      function()
-        Snacks.picker.lsp_definitions()
-      end,
-      desc = 'Goto Definition',
-    },
-    {
-      'gD',
-      function()
-        Snacks.picker.lsp_declarations()
-      end,
-      desc = 'Goto Declaration',
-    },
-    {
-      'gr',
-      function()
-        Snacks.picker.lsp_references()
-      end,
-      nowait = true,
-      desc = 'References',
-    },
-    {
-      'gI',
-      function()
-        Snacks.picker.lsp_implementations()
-      end,
-      desc = 'Goto Implementation',
-    },
-    {
-      'gy',
-      function()
-        Snacks.picker.lsp_type_definitions()
-      end,
-      desc = 'Goto T[y]pe Definition',
-    },
-    {
-      '<leader>ss',
-      function()
-        Snacks.picker.pickers()
-      end,
-      desc = 'Snacks',
-    },
+    -- Find
+    { '<leader><leader>', pick 'smart', desc = 'Smart find files' },
+    { '<leader>sf', pick 'files', desc = '[S]earch [F]iles' },
+    { '<leader>se', pick('files', { hidden = true, ignored = true, title = 'Everything' }), desc = '[S]earch [E]verything' },
+    { '<leader>so', pick 'buffers', desc = '[S]earch [O]pen buffers' },
+    { '<leader>sp', pick 'grep', desc = '[S]earch [P]roject (grep)' },
+    { '<leader>sw', pick 'grep_word', mode = { 'n', 'x' }, desc = '[S]earch [W]ord / selection' },
+    { '<leader>sb', pick 'lines', desc = '[S]earch [B]uffer lines' },
+    { '<leader>sB', pick 'grep_buffers', desc = '[S]earch open [B]uffers' },
+    { '<leader>sd', pick 'diagnostics', desc = '[S]earch [D]iagnostics' },
+    { '<leader>sD', pick 'diagnostics_buffer', desc = '[S]earch buffer [D]iagnostics' },
+    { '<leader>sh', pick 'help', desc = '[S]earch [H]elp' },
+    { '<leader>sk', pick 'keymaps', desc = '[S]earch [K]eymaps' },
+    { '<leader>sc', pick 'commands', desc = '[S]earch [C]ommands' },
+    { '<leader>sq', pick 'qflist', desc = '[S]earch [Q]uickfix' },
+    { '<leader>s"', pick 'registers', desc = '[S]earch registers' },
+    { '<leader>sr', pick 'resume', desc = '[S]earch [R]esume' },
+    { '<leader>ss', pick 'pickers', desc = '[S]earch pickers' },
+    -- LSP
+    { 'gd', pick 'lsp_definitions', desc = 'Goto definition' },
+    { 'gD', pick 'lsp_declarations', desc = 'Goto declaration' },
+    { 'gr', pick 'lsp_references', nowait = true, desc = 'References' },
+    { 'gI', pick 'lsp_implementations', desc = 'Goto implementation' },
+    { 'gy', pick 'lsp_type_definitions', desc = 'Goto type definition' },
+    -- Git
+    { '<leader>gs', pick 'git_status', desc = '[G]it [S]tatus' },
+    { '<leader>gg', function() Snacks.lazygit() end, desc = 'Lazygit' },
+    { '<leader>gl', function() Snacks.lazygit.log_file() end, desc = '[G]it [L]og (file)' },
+    { '<leader>go', function() Snacks.gitbrowse() end, mode = { 'n', 'x' }, desc = '[G]it [O]pen in browser' },
   },
 }
