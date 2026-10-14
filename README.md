@@ -25,7 +25,7 @@ All agents run on **subscription logins**. Neovim strips `ANTHROPIC_API_KEY`, `O
 One-time setup:
 
 ```sh
-npm i -g @anthropic-ai/claude-code @openai/codex @google/gemini-cli \
+npm i -g typescript @anthropic-ai/claude-code @openai/codex @google/gemini-cli \
   @zed-industries/claude-agent-acp @zed-industries/codex-acp
 claude            # /login with your Claude subscription
 codex login       # Sign in with ChatGPT

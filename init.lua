@@ -44,7 +44,7 @@ vim.opt.tabstop = 2
 vim.opt.softtabstop = 2
 vim.opt.smartindent = true
 vim.opt.splitkeep = 'screen'
-vim.opt.sessionoptions = { 'buffers', 'curdir', 'tabpages', 'winsize', 'help', 'globals', 'skiprtp', 'folds' }
+vim.opt.sessionoptions = { 'buffers', 'curdir', 'tabpages', 'winsize', 'help', 'globals', 'skiprtp', 'folds', 'localoptions' }
 vim.opt.hlsearch = true
 vim.opt.foldtext = '' -- native highlighted fold text
 
